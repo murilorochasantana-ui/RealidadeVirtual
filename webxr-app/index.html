@@ -3,11 +3,136 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>WebXR + Three.js + TypeScript</title>
+    <title>WebXR Bancada de Capacidades</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body { height: 100%; overflow: hidden; background: #101015; }
-      #app { position: fixed; inset: 0; }
+      #app { position: fixed; inset: 0; z-index: 0; }
+
+      #bancada {
+        position: fixed;
+        bottom: 16px;
+        left: 16px;
+        z-index: 100;
+        width: min(540px, calc(100vw - 32px));
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        font-family: system-ui, sans-serif;
+        font-size: 13px;
+        color: #dde;
+      }
+
+      #diario {
+        background: rgba(5, 5, 15, 0.95);
+        border: 1px solid rgba(79, 124, 255, 0.3);
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        padding: 8px 12px;
+        max-height: 110px;
+        overflow-y: auto;
+      }
+      #diario:empty { display: none; }
+      .diario { line-height: 1.5; padding: 1px 0; font-size: 12px; }
+      .diario::before { margin-right: 6px; }
+      .diario-nota   { color: #a0b4ff; }
+      .diario-nota::before   { content: '›'; }
+      .diario-alerta { color: #fbbf24; }
+      .diario-alerta::before { content: '⚠'; }
+      .diario-falha  { color: #f87171; }
+      .diario-falha::before  { content: '✕'; }
+
+      #corpo-relatorio {
+        background: rgba(10, 10, 22, 0.93);
+        border: 1px solid rgba(79, 124, 255, 0.35);
+        border-top: none;
+        border-radius: 0 0 10px 10px;
+        overflow-y: auto;
+        max-height: calc(80vh - 130px);
+        backdrop-filter: blur(8px);
+      }
+
+      #relatorio-sem-sessao,
+      #relatorio-sonda {
+        padding: 12px 14px;
+      }
+      #relatorio-sem-sessao { border-bottom: 1px solid rgba(79,124,255,0.15); }
+      #relatorio-sem-sessao:empty,
+      #relatorio-sonda:empty { display: none; }
+
+      #botao-sonda {
+        display: block;
+        width: calc(100% - 28px);
+        margin: 10px 14px;
+        padding: 10px;
+        background: #4f7cff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        min-height: 44px;
+        transition: background 0.2s;
+      }
+      #botao-sonda:hover  { background: #3b63d4; }
+      #botao-sonda:disabled { background: #444; cursor: wait; }
+
+      #relatorio-sem-sessao h2,
+      #relatorio-sonda h2 {
+        font-size: 14px;
+        color: #6b9fff;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid rgba(79,124,255,0.25);
+      }
+      #relatorio-sem-sessao h3,
+      #relatorio-sonda h3 {
+        font-size: 11px;
+        color: #8899cc;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 12px 0 5px;
+      }
+      #relatorio-sem-sessao p,
+      #relatorio-sonda p {
+        font-size: 12px;
+        line-height: 1.55;
+        margin-bottom: 4px;
+      }
+      #relatorio-sem-sessao table,
+      #relatorio-sonda table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 6px;
+        font-size: 12px;
+      }
+      #relatorio-sem-sessao th,
+      #relatorio-sonda th {
+        text-align: left;
+        color: #667;
+        font-weight: 600;
+        font-size: 10px;
+        text-transform: uppercase;
+        padding: 3px 6px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+      #relatorio-sem-sessao td,
+      #relatorio-sonda td {
+        padding: 4px 6px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        vertical-align: top;
+      }
+      td.codigo {
+        font-family: monospace;
+        font-size: 11px;
+        background: rgba(79,124,255,0.1);
+        border-radius: 3px;
+        white-space: nowrap;
+      }
+
       #info {
         position: fixed;
         top: 12px;
@@ -16,15 +141,34 @@
         text-align: center;
         color: #fff;
         font-family: system-ui, sans-serif;
-        font-size: 14px;
+        font-size: 13px;
         pointer-events: none;
-        text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+        z-index: 10;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <div id="info">Clique em <b>ENTER VR</b> ou <b>START AR</b>. No desktop, arraste para orbitar.</div>
+
+    <div id="bancada">
+      <div id="diario"></div>
+
+      <div id="corpo-relatorio">
+        <div id="relatorio-sem-sessao"></div>
+
+        <button id="botao-sonda">Sondar aparelho</button>
+
+        <div id="relatorio-sonda"></div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
+
+    <script type="module">
+      import { iniciarSonda } from '/src/bancada/index.ts';
+      iniciarSonda();
+    </script>
   </body>
 </html>

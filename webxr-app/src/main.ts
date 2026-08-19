@@ -6,7 +6,6 @@ import { XRScene } from './scene';
 import { setupControllers } from './controllers';
 import { setupARHitTest } from './ar';
 
-// --- Renderer ---
 const container = document.getElementById('app') as HTMLDivElement;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -15,10 +14,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true; // habilita o loop WebXR
 container.appendChild(renderer.domElement);
 
-// --- Cena ---
 const xr = new XRScene();
 
-// Órbita com o mouse no desktop (fora do modo imersivo)
 const orbit = new OrbitControls(xr.camera, renderer.domElement);
 orbit.target.set(0, 1.2, -1);
 orbit.update();
