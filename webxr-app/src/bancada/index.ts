@@ -1,6 +1,7 @@
 import { sondar, sondarSemSessao, type ResultadoDaSonda } from './devices/sonda';
-import { montarSemSessao, montarSonda } from './relatorio/relatorio';
+import { montarSemSessao, montarSonda, montarDominio } from './relatorio/relatorio';
 import { Diario, explicarFalha } from './relatorio/diario';
+import { BATERIA, inconsistenciasDoDominio } from './dominio/dominio';
 
 function exigirElemento(id: string): HTMLElement {
   const el = document.getElementById(id);
@@ -12,12 +13,14 @@ function exigirElemento(id: string): HTMLElement {
 
 export function iniciarSonda(): void {
   let elDiario: HTMLElement;
+  let elDominio: HTMLElement;
   let elSemSessao: HTMLElement;
   let elSonda: HTMLElement;
   let botao: HTMLElement;
 
   try {
     elDiario = exigirElemento('diario');
+    elDominio = exigirElemento('dominio');
     elSemSessao = exigirElemento('relatorio-sem-sessao');
     elSonda = exigirElemento('relatorio-sonda');
     botao = exigirElemento('botao-sonda');
@@ -28,6 +31,14 @@ export function iniciarSonda(): void {
 
   const diario = new Diario();
   diario.fixarDestino(elDiario);
+
+  // Passo 2: o domínio é confrontado com o compilador (tipos) e consigo mesmo
+  // (inconsistenciasDoDominio) antes de qualquer coisa desenhar.
+  const problemasDoDominio = inconsistenciasDoDominio(BATERIA);
+  if (problemasDoDominio.length > 0) {
+    diario.alerta(`O domínio tem inconsistências: ${problemasDoDominio.join(' ')}`);
+  }
+  montarDominio(elDominio, BATERIA, problemasDoDominio);
 
   if (!window.isSecureContext) {
     diario.alerta(

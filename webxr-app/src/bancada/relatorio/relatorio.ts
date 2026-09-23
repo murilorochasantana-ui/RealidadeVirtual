@@ -2,6 +2,8 @@ import type { SondaSemSessao, ResultadoDaSonda, SondaEmSessao } from '../devices
 import { conferirComposicao } from '../devices/sonda';
 import type { LinhaDoRelatorio } from '../modes/verificacao';
 import type { EstadoDeRecurso } from '../devices/recursos';
+import type { Dominio } from '../dominio/dominio';
+import { totalDeInstancias } from '../dominio/dominio';
 
 
 function paragrafo(texto: string): HTMLParagraphElement {
@@ -42,7 +44,7 @@ function tabelaDeRegimes(linhas: readonly LinhaDoRelatorio[]): HTMLTableElement 
   const tabela = document.createElement('table');
 
   const cabecalho = tabela.insertRow();
-  for (const titulo of ['Neste aparelho', 'Modo', 'Nome', 'Para que serve']) {
+  for (const titulo of ['Neste aparelho', 'Modo', 'Nome', 'Trata o mundo como']) {
     cabecalho.appendChild(celula(titulo, true));
   }
 
@@ -53,10 +55,25 @@ function tabelaDeRegimes(linhas: readonly LinhaDoRelatorio[]): HTMLTableElement 
     tdId.classList.add('codigo');
     fileira.appendChild(tdId);
     fileira.appendChild(celula(linha.regime.nome));
-    fileira.appendChild(celula(linha.regime.descricao));
+    fileira.appendChild(celula(linha.regime.tratamentoDoMundo));
   }
 
   return tabela;
+}
+
+/** Os três campos do Passo 3 que não cabem numa coluna estreita: espaço de
+ * referência, o que é rastreado e contra o que a cena é registrada. Um
+ * parágrafo por regime, para não espremer a tabela acima. */
+function detalhesDosRegimes(linhas: readonly LinhaDoRelatorio[]): HTMLElement {
+  const bloco = document.createElement('div');
+  for (const linha of linhas) {
+    const r = linha.regime;
+    bloco.appendChild(subtitulo(r.nome));
+    bloco.appendChild(paragrafo(`Espaço de referência: ${r.espacoDeReferencia}`));
+    bloco.appendChild(paragrafo(`Rastreia: ${r.rastreia}`));
+    bloco.appendChild(paragrafo(`Registrado contra: ${r.registroContra}`));
+  }
+  return bloco;
 }
 
 export function montarSemSessao(raiz: HTMLElement, resultado: SondaSemSessao): void {
@@ -84,6 +101,39 @@ export function montarSemSessao(raiz: HTMLElement, resultado: SondaSemSessao): v
 
   raiz.appendChild(subtitulo('Regimes suportados'));
   raiz.appendChild(tabelaDeRegimes(resultado.regimes));
+  raiz.appendChild(detalhesDosRegimes(resultado.regimes));
+}
+
+// ---------------------------------------------------------------------------
+// Domínio (Passo 2)
+// ---------------------------------------------------------------------------
+
+export function montarDominio(
+  raiz: HTMLElement,
+  dominio: Dominio,
+  problemas: readonly string[],
+): void {
+  raiz.replaceChildren();
+
+  const titulo = document.createElement('h2');
+  titulo.textContent = `Domínio: ${dominio.nome}`;
+  raiz.appendChild(titulo);
+
+  raiz.appendChild(paragrafo(dominio.descricao));
+  raiz.appendChild(
+    paragrafo(
+      `Tarefa: ${dominio.tarefa.enunciado} Concluída quando: ${dominio.tarefa.estadoFinal}`,
+    ),
+  );
+  raiz.appendChild(
+    paragrafo(
+      `${dominio.pecas.length} tipos de peça declarados, ${totalDeInstancias(dominio)} ` +
+        'instâncias no total. ' +
+        (problemas.length === 0
+          ? 'Nenhuma inconsistência.'
+          : `Inconsistências: ${problemas.join(' ')}`),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
