@@ -6,6 +6,7 @@ import { XRScene } from './scene';
 import { setupControllers } from './controllers';
 import { setupARHitTest } from './ar';
 import { Diario } from './bancada/relatorio/diario';
+import { configurarPaineis } from './paineis';
 
 const container = document.getElementById('app') as HTMLDivElement;
 
@@ -14,6 +15,9 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true; // habilita o loop WebXR
 container.appendChild(renderer.domElement);
+
+// Painéis de relatório e da cena: recolhíveis, para não cobrirem a bateria no celular.
+configurarPaineis(renderer);
 
 const xr = new XRScene();
 
