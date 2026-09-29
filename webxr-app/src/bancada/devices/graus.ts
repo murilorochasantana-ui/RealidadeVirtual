@@ -1,4 +1,3 @@
-
 export type GrausDeLiberdade = '6DoF' | '3DoF' | 'indeterminado';
 
 export type ClasseDeAparelho = 'visor' | 'celular' | 'desktop' | 'desconhecido';

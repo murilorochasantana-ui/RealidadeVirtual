@@ -41,7 +41,6 @@ export const RECURSOS_CONSULTADOS: readonly RecursoOpcional[] = [
   },
 ];
 
-
 export function estadoDoRecurso(
   nome: string,
   concedidos: readonly string[] | undefined,

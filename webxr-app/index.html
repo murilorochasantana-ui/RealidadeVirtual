@@ -9,26 +9,59 @@
       html, body { height: 100%; overflow: hidden; background: #101015; }
       #app { position: fixed; inset: 0; z-index: 0; }
 
-      #bancada {
+      .painel {
         position: fixed;
-        bottom: 16px;
-        left: 16px;
         z-index: 100;
-        width: min(540px, calc(100vw - 32px));
-        max-height: 80vh;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
         font-family: system-ui, sans-serif;
         font-size: 13px;
         color: #dde;
+        background: rgba(10, 10, 22, 0.93);
+        border: 1px solid rgba(79, 124, 255, 0.35);
+        border-radius: 10px;
+        backdrop-filter: blur(8px);
+        overflow: hidden;
+      }
+      .painel > summary {
+        display: block;
+        min-height: 40px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6b9fff;
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .painel > summary::-webkit-details-marker { display: none; }
+      .painel > summary::before {
+        content: '▸';
+        display: inline-block;
+        width: 1.1em;
+      }
+      .painel[open] > summary::before { content: '▾'; }
+      .painel[open] > summary { border-bottom: 1px solid rgba(79, 124, 255, 0.25); }
+
+      #bancada.com-aviso > summary::after { content: ' ⚠'; color: #fbbf24; }
+
+      #bancada {
+        bottom: 16px;
+        left: 16px;
+      }
+      #bancada[open] { width: min(540px, calc(100vw - 32px)); }
+
+      #bancada-conteudo {
+        display: flex;
+        flex-direction: column;
+        max-height: calc(80vh - 42px);
       }
 
       #diario {
-        background: rgba(5, 5, 15, 0.95);
-        border: 1px solid rgba(79, 124, 255, 0.3);
-        border-bottom: none;
-        border-radius: 10px 10px 0 0;
+        flex: none;
+        background: rgba(5, 5, 15, 0.6);
+        border-bottom: 1px solid rgba(79, 124, 255, 0.15);
         padding: 8px 12px;
         max-height: 110px;
         overflow-y: auto;
@@ -44,13 +77,9 @@
       .diario-falha::before  { content: '✕'; }
 
       #corpo-relatorio {
-        background: rgba(10, 10, 22, 0.93);
-        border: 1px solid rgba(79, 124, 255, 0.35);
-        border-top: none;
-        border-radius: 0 0 10px 10px;
+        flex: 1 1 auto;
+        min-height: 0;
         overflow-y: auto;
-        max-height: calc(80vh - 130px);
-        backdrop-filter: blur(8px);
       }
 
       #relatorio-sem-sessao,
@@ -146,23 +175,137 @@
         text-shadow: 0 1px 3px rgba(0,0,0,0.7);
         z-index: 10;
       }
+
+      #painel-cena {
+        top: 16px;
+        right: 16px;
+        font-size: 12px;
+      }
+      #painel-cena[open] { width: min(340px, calc(100vw - 32px)); }
+      #painel-cena-conteudo {
+        padding: 12px 14px;
+        max-height: calc(70vh - 42px);
+        overflow-y: auto;
+      }
+      #estrutura {
+        white-space: pre;
+        font-family: monospace;
+        font-size: 11px;
+        background: rgba(79, 124, 255, 0.08);
+        border-radius: 6px;
+        padding: 8px;
+        margin-bottom: 10px;
+        overflow-x: auto;
+      }
+      #botao-mover,
+      #botao-ancorar {
+        width: 100%;
+        padding: 8px;
+        background: #4f7cff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        min-height: 40px;
+      }
+      #botao-mover:hover,
+      #botao-ancorar:hover { background: #3b63d4; }
+      #botao-ancorar:disabled { background: #2f5a2f; cursor: default; }
+      #botao-mover { margin-bottom: 8px; }
+      #diario-cena { margin-top: 8px; font-size: 11px; line-height: 1.5; }
+      #diario-cena p { padding: 2px 0; color: #a0b4ff; }
+
+      #dominio { padding: 12px 14px; border-bottom: 1px solid rgba(79,124,255,0.15); }
+      #dominio h2 { font-size: 14px; color: #6b9fff; margin-bottom: 8px; }
+      #dominio p { font-size: 12px; line-height: 1.5; margin-bottom: 4px; }
+
+      body.em-sessao-xr #info { display: none; }
+
+      #dica-ar {
+        display: none;
+        position: fixed;
+        left: 50%;
+        bottom: 84px;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: calc(100vw - 32px);
+        z-index: 10;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.55);
+        color: #fff;
+        font: 14px/1.4 system-ui, sans-serif;
+        text-align: center;
+        pointer-events: none;
+      }
+      #dica-ar:empty { display: none; }
+      body.em-ar #dica-ar:not(:empty) { display: block; }
+
+      @media (max-width: 640px), (max-height: 500px) {
+
+        .painel { max-width: calc(50vw - 12px); backdrop-filter: none; }
+        .painel > summary { padding: 10px 12px; font-size: 12px; }
+        #bancada { top: 8px; bottom: auto; left: 8px; }
+        #painel-cena { top: 8px; right: 8px; }
+        #bancada[open],
+        #painel-cena[open] { width: auto; }
+        .painel[open] { border-color: #6b9fff; }
+        .painel[open] > summary { border-bottom: none; }
+        #bancada-conteudo,
+        #painel-cena-conteudo {
+          position: fixed;
+          top: 56px;
+          left: 8px;
+          right: 8px;
+          max-height: 50vh;
+          max-height: 50dvh;
+          background: rgba(10, 10, 22, 0.93);
+          border: 1px solid rgba(79, 124, 255, 0.35);
+          border-radius: 10px;
+          backdrop-filter: blur(8px);
+          overflow: hidden;
+        }
+        #painel-cena-conteudo { overflow-y: auto; }
+        #diario { max-height: 72px; }
+        #estrutura { max-height: 28vh; overflow-y: auto; }
+        #info { top: 58px; padding: 0 12px; font-size: 12px; }
+        body:has(.painel[open]) #info { visibility: hidden; }
+      }
     </style>
   </head>
   <body>
     <div id="app"></div>
     <div id="info">Clique em <b>ENTER VR</b> ou <b>START AR</b>. No desktop, arraste para orbitar.</div>
+    <div id="dica-ar"></div>
 
-    <div id="bancada">
-      <div id="diario"></div>
+    <details id="bancada" class="painel">
+      <summary>Relatório</summary>
+      <div id="bancada-conteudo">
+        <div id="diario"></div>
 
-      <div id="corpo-relatorio">
-        <div id="relatorio-sem-sessao"></div>
+        <div id="corpo-relatorio">
+          <div id="dominio"></div>
 
-        <button id="botao-sonda">Sondar aparelho</button>
+          <div id="relatorio-sem-sessao"></div>
 
-        <div id="relatorio-sonda"></div>
+          <button id="botao-sonda">Sondar aparelho</button>
+
+          <div id="relatorio-sonda"></div>
+        </div>
       </div>
-    </div>
+    </details>
+
+    <details id="painel-cena" class="painel">
+      <summary>Cena e ancoragem</summary>
+      <div id="painel-cena-conteudo">
+        <div id="estrutura"></div>
+        <button id="botao-mover">Mover o bumbo</button>
+        <button id="botao-ancorar">Ancorar o tom no bumbo</button>
+        <div id="diario-cena"></div>
+      </div>
+    </details>
 
     <script type="module" src="/src/main.ts"></script>
 

@@ -1,35 +1,56 @@
 import * as THREE from 'three';
+import type { XRScene } from './scene';
 
-export function setupARHitTest(
-  renderer: THREE.WebGLRenderer,
-  scene: THREE.Scene,
-) {
+const NORMAL_MINIMA_PARA_CIMA = 0.9;
+
+export function setupARHitTest(renderer: THREE.WebGLRenderer, xr: XRScene) {
   const reticle = new THREE.Mesh(
     new THREE.RingGeometry(0.07, 0.09, 32).rotateX(-Math.PI / 2),
     new THREE.MeshBasicMaterial({ color: 0x4f7cff }),
   );
   reticle.matrixAutoUpdate = false;
   reticle.visible = false;
-  scene.add(reticle);
+  xr.scene.add(reticle);
+
+  const dica = document.getElementById('dica-ar');
+  function mostrarDica(texto: string): void {
+    if (dica !== null && dica.textContent !== texto) dica.textContent = texto;
+  }
 
   let hitTestSource: XRHitTestSource | null = null;
   let requested = false;
+  let emAR = false;
+  let bateriaColocada = false;
+
+  renderer.xr.addEventListener('sessionstart', () => {
+
+    const session = renderer.xr.getSession();
+    emAR = session !== null && session.environmentBlendMode !== 'opaque';
+    if (!emAR) return;
+    bateriaColocada = false;
+    xr.prepararParaMesa();
+    document.body.classList.add('em-ar');
+  });
+
+  renderer.xr.addEventListener('sessionend', () => {
+    if (!emAR) return;
+    emAR = false;
+    reticle.visible = false;
+    xr.restaurarTamanhoReal();
+    document.body.classList.remove('em-ar');
+  });
 
   const controller = renderer.xr.getController(0);
   controller.addEventListener('select', () => {
-    if (!reticle.visible) return;
-    const mesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.05, 0.05, 0.2, 24),
-      new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.5 }),
-    );
-    mesh.position.setFromMatrixPosition(reticle.matrix);
-    mesh.position.y += 0.1;
-    scene.add(mesh);
+    if (!emAR || !reticle.visible) return;
+    xr.colocarBateria(reticle.matrix);
+    bateriaColocada = true;
   });
-  scene.add(controller);
+  xr.scene.add(controller);
 
   return {
     update(frame: XRFrame): void {
+      if (!emAR) return;
       const session = renderer.xr.getSession();
       if (!session) return;
 
@@ -49,17 +70,24 @@ export function setupARHitTest(
         });
       }
 
-      if (!hitTestSource) return;
+      if (hitTestSource) {
+        const results = frame.getHitTestResults(hitTestSource);
+        const pose = results.length > 0 ? results[0].getPose(referenceSpace) : undefined;
 
-      const results = frame.getHitTestResults(hitTestSource);
-      if (results.length > 0) {
-        const pose = results[0].getPose(referenceSpace);
-        if (pose) {
+        if (pose !== undefined && pose.transform.matrix[5] > NORMAL_MINIMA_PARA_CIMA) {
           reticle.visible = true;
           reticle.matrix.fromArray(pose.transform.matrix);
+        } else {
+          reticle.visible = false;
         }
+      }
+
+      if (!reticle.visible) {
+        mostrarDica('Mova o celular devagar, apontando para uma mesa ou para o chão.');
+      } else if (!bateriaColocada) {
+        mostrarDica('Toque na tela para colocar a bateria no anel azul.');
       } else {
-        reticle.visible = false;
+        mostrarDica('Toque em outro ponto para mudar a bateria de lugar.');
       }
     },
   };

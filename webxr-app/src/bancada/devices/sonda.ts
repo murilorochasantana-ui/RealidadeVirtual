@@ -112,7 +112,6 @@ function lerFontesDeEntrada(sessao: XRSession): FonteDeEntradaSondada[] {
   return fontes;
 }
 
-
 function camadaMinima(sessao: XRSession): void {
   const tela: HTMLCanvasElement = document.createElement('canvas');
   const gl: WebGL2RenderingContext | null = tela.getContext('webgl2', {

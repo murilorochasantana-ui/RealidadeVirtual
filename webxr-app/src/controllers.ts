@@ -49,7 +49,7 @@ export function setupControllers(
     const hit = intersect(controller);
     if (hit) {
       const obj = hit.object;
-      controller.attach(obj); 
+      controller.attach(obj);
       selected.set(controller, obj);
     }
   }
@@ -57,7 +57,7 @@ export function setupControllers(
   function onSelectEnd(controller: THREE.XRTargetRaySpace): void {
     const obj = selected.get(controller);
     if (obj) {
-      scene.attach(obj); 
+      scene.attach(obj);
       selected.delete(controller);
     }
   }

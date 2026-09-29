@@ -1,11 +1,9 @@
-
 export interface Estabilidade {
   readonly totalQuadros: number;
   readonly quadrosSemPose: number;
   readonly maiorLacuna: number;
   readonly quadrosOcultos: number;
 }
-
 
 export class ContadorDeEstabilidade {
   private total: number = 0;
@@ -44,7 +42,6 @@ export class ContadorDeEstabilidade {
     };
   }
 }
-
 
 export function diagnosticar(estabilidade: Estabilidade): string {
   const { totalQuadros, quadrosSemPose, maiorLacuna } = estabilidade;

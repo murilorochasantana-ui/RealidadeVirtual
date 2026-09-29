@@ -1,6 +1,7 @@
 import { sondar, sondarSemSessao, type ResultadoDaSonda } from './devices/sonda';
-import { montarSemSessao, montarSonda } from './relatorio/relatorio';
+import { montarSemSessao, montarSonda, montarDominio } from './relatorio/relatorio';
 import { Diario, explicarFalha } from './relatorio/diario';
+import { BATERIA, inconsistenciasDoDominio } from './dominio/dominio';
 
 function exigirElemento(id: string): HTMLElement {
   const el = document.getElementById(id);
@@ -12,12 +13,14 @@ function exigirElemento(id: string): HTMLElement {
 
 export function iniciarSonda(): void {
   let elDiario: HTMLElement;
+  let elDominio: HTMLElement;
   let elSemSessao: HTMLElement;
   let elSonda: HTMLElement;
   let botao: HTMLElement;
 
   try {
     elDiario = exigirElemento('diario');
+    elDominio = exigirElemento('dominio');
     elSemSessao = exigirElemento('relatorio-sem-sessao');
     elSonda = exigirElemento('relatorio-sonda');
     botao = exigirElemento('botao-sonda');
@@ -29,14 +32,18 @@ export function iniciarSonda(): void {
   const diario = new Diario();
   diario.fixarDestino(elDiario);
 
+  const problemasDoDominio = inconsistenciasDoDominio(BATERIA);
+  if (problemasDoDominio.length > 0) {
+    diario.alerta(`O domínio tem inconsistências: ${problemasDoDominio.join(' ')}`);
+  }
+  montarDominio(elDominio, BATERIA, problemasDoDominio);
+
   if (!window.isSecureContext) {
     diario.alerta(
       'Esta página não está em contexto seguro (sem HTTPS). ' +
         'A API XR não é exposta aqui, e o botão vai responder como se o aparelho não tivesse suporte, o que seria informação falsa sobre o aparelho.',
     );
   }
-
-  // Primeiro tempo: sem sessão 
 
   void sondarSemSessao()
     .then((resultado) => {
@@ -51,8 +58,6 @@ export function iniciarSonda(): void {
     .catch((erro: unknown) => {
       diario.falha(explicarFalha(erro));
     });
-
-  // Segundo tempo: com sessão 
 
   botao.addEventListener('click', () => {
     (botao as HTMLButtonElement).disabled = true;
